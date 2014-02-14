@@ -1,0 +1,7 @@
+name: objectify
+author: Noémi Salaün <noemi.salaun@gmail.com>
+version: 0.0.1
+homepage: https://github.com/Duvo/objectify
+description: Dart library to transform structured data into object using mirrors.
+dev_dependencies:
+  unittest: any
