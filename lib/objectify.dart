@@ -1,5 +1,10 @@
 library objectify;
 
+import 'dart:mirrors';
+
+part 'objectify_src/complex.dart';
+part 'objectify_src/simple.dart';
+
 bool objectifyDebug = false;
 
 dynamic objectify(Type rootType, dynamic data, {bool debug: false}) {
@@ -24,35 +29,15 @@ dynamic objectify(Type rootType, dynamic data, {bool debug: false}) {
     if (rootType == Map) print (rootType.toString() + ' == Map');
   }
 
-
   if (data == null) {
     return null;
   }
-  if (rootType == String) {
-    return data.toString();
-  }
 
-  if (rootType == num) {
-    if (data is num) return data;
-    if (data is bool) return data ? 1 : 0;
-    if (data is String) return num.parse(data);
-  }
-
-  if (rootType == int) {
-    if (data is num) return data.round();
-    if (data is bool) return data ? 1 : 0;
-    if (data is String) return num.parse(data).round();
-  }
-
-  if (rootType == double) {
-    if (data is num) return data.toDouble();
-    if (data is bool) return data ? 1.0 : 0.0;
-    if (data is String) return num.parse(data).toDouble();
-  }
-
-  if (rootType == bool) {
-    if (data is bool) return data;
-    if (data is String) return data.toLowerCase() == 'true';
-    if (data is num) return data == 1;
+  if (rootType == String || rootType == num || rootType == int
+      || rootType == double || rootType == bool || rootType == List
+      || rootType == Map) {
+    return _handleSimpleType(rootType, data);
+  } else {
+    return _handleComplexType(rootType, data);
   }
 }
