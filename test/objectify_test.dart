@@ -1,24 +1,95 @@
 import 'package:unittest/unittest.dart';
 import 'package:objectify/objectify.dart';
 
-class Foobar {
-  Foo foo;
-  List<Bar> bars;
-  var unknow;
+class Simple {
+  String stringVar;
+  int intVar;
+  double doubleVar;
+  num numVar;
+  Object objectVar;
+  var varVar;
+  dynamic dynamicVar;
+  List listVar;
+  Map mapVar;
+  String nullVar;
+  String absentVar;
+  Set setVar;
 }
 
-class Foo {
-  String foo;
+var simple1 = {'stringVar': 'foobar',
+               'intVar': 10,
+               'doubleVar': 2.5,
+               'numVar': 20,
+               'objectVar': [1, 2, 'foo'],
+               'varVar': {'foo': 'bar'},
+               'dynamicVar': [1, 2, [1, 2], {'foo': 'bar'}],
+               'listVar': [1, 2, 3],
+               'mapVar': {'foo': 'fooVal', 'bar': 'barVal'},
+               'nullVar': null,
+               'setVar': [1, 2, 3]
+               };
+
+var simple2 = {'stringVar': 'foo',
+               'intVar': 20,
+               'doubleVar': 5.5,
+               'numVar': 2.3,
+               'objectVar': 'foobar',
+               'varVar': [1, 2, 3],
+               'dynamicVar': [1, 2],
+               'listVar': [1],
+               'mapVar': {'foo': 'foo'},
+               'nullVal': null
+               };
+
+class Complex {
+  Simple simpleVar;
 }
 
-class Bar {
-  int bar;
+var complex1 = {'simpleVar': simple1};
+var complex2 = {'simpleVar': simple2};
+
+class Generic<T> {
+  T tVar;
+  List<T> listTVar;
 }
+
+var generic1 = {'tVar': 'stringValue', 'listTVar': ['foo', 'bar']};
+var generic2 = {'tVar': simple1, 'listTVar': [simple1, simple2]};
+
+class SuperComplex {
+  Set<Simple> setSimpleVar;
+  List<int> listIntVar;
+  Map<String, String> mapStringVar;
+  Map<int, String> mapIntVar;
+  List<String> listStringVar;
+  List<Simple> listSimpleVar;
+  Map<String, Complex> mapComplexVar;  
+}
+
+var superComplex1 = {'setSimpleVar': [simple1, simple2],
+                     'listIntVar': [1, 2, 3],
+                     'mapStringVar': {'foo': 'foo', 'bar': 'bar'},
+                     'mapIntVar': {1: 'one', 2: 'two', 3: 'three'},
+                     'listStringVar': ['foo', 'bar', 'foobar'],
+                     'listSimpleVar': [simple1, simple2],
+                     'listComplexVar': {'num1': complex1, 'num2': complex2}};
 
 const TEST_SIMPLE = false;
 const TEST_COMPLEX = true;
 
 main() {
+  group('Tools', () {
+    test('isSubclassOf', () {
+      expect(isSubclassOf(List, List), isTrue, reason: 'List - List');
+      var temp = new List<String>();
+      expect(isSubclassOf(temp.runtimeType, List), isTrue, reason: 'List<String> - List');
+      temp = 15;
+      expect(isSubclassOf(temp.runtimeType, num), isTrue, reason: 'int - num');
+      expect(isSubclassOf(List, List), isTrue, reason: 'List - List');
+      expect(isSubclassOf(List, List), isTrue, reason: 'List - List');
+    });
+  });
+  
   if (TEST_SIMPLE) {
     group('Simples types', () {
       test('num', () {
@@ -65,29 +136,100 @@ main() {
       });
       test('Map', () {
         expect(objectify(Map, {'foo': 'bar', 2: '2'}), {'foo': 'bar', 2: '2'});
+        expect(objectify(Map, ['foo', 'bar']), {0: 'foo', 1: 'bar'});
+      });
+      test('Set', () {
+        expect(objectify(Set, ['foo', 'bar']), new Set.from(['foo', 'bar']));
       });
     });
   }
 
   if (TEST_COMPLEX) {
     group('Complex types', () {
-      test('Foo', () {
-        var foo = objectify(Foo, {'foo': 'fooValue'});
-        expect(foo, new isInstanceOf<Foo>());
-        expect(foo.foo, 'fooValue');
+      /*test('Simple', () {
+        Simple simple = objectify(Simple, simple1);        
+        checkSimple(simple, simple1);
       });
-      test('Bar', () {
-        var bar = objectify(Bar, {'bar': 10});
-        expect(bar, new isInstanceOf<Bar>());
-        expect(bar.bar, 10);
+      test('Complex', () {
+        Complex complex = objectify(Complex, complex1);        
+        checkComplex(complex, complex1);
+      });*/
+      test('Generic', () {
+        Generic generic = objectify(Generic, generic1);
+        checkGeneric(generic, generic1);           
       });
-      test('Foobar', () {
-        var foobar = objectify(Foobar, {'foo': {'foo': 'fooValue'},
-          'bars': [{'bar': 10}, {'bar': 20}],
-          'unknow': 'stringValue'});
-        expect(foobar, new isInstanceOf<Foobar>());
-        expect(foobar.bars[1].bar, 20);
+      test('Super complex', () {
+        SuperComplex superComplex = objectify(SuperComplex, superComplex1);        
+        checkSuperComplex(superComplex, superComplex1);
       });
     });
   }
+}
+
+void checkSimple(Simple simpleObject, dynamic simpleArray) {
+  expect(simpleObject, new isInstanceOf<Simple>('Simple'));
+  expect(simpleObject.absentVar, isNull);
+  expect(simpleObject.nullVar, isNull);
+  expect(simpleObject.doubleVar, simpleArray['doubleVar']);
+  expect(simpleObject.dynamicVar, simpleArray['dynamicVar']);
+  expect(simpleObject.intVar, simpleArray['intVar']);
+  expect(simpleObject.listVar, simpleArray['listVar']);
+  expect(simpleObject.mapVar, simpleArray['mapVar']);  
+  expect(simpleObject.numVar, simpleArray['numVar']);
+  expect(simpleObject.objectVar, simpleArray['objectVar']);
+  expect(simpleObject.stringVar, simpleArray['stringVar']);
+  expect(simpleObject.varVar, simpleArray['varVar']);
+  expect(simpleObject.setVar, simpleArray['setVar']);
+}
+
+void checkComplex(Complex complexObject, dynamic complexArray) {
+  expect(complexObject, new isInstanceOf<Complex>('Complex'));
+  checkSimple(complexObject.simpleVar, complexArray['simpleVar']);
+}
+
+void checkGeneric(Generic genericObject, dynamic genericArray) {
+  expect(genericObject, new isInstanceOf<Generic>('Generic'));
+  if (genericObject is Generic<String>) {
+    expect(genericObject.tVar, genericArray['tVar']);
+    expect(genericObject.listTVar, genericArray['listTVar']);
+  } else if (genericObject is Generic<Simple>) {
+    checkSimple(genericObject.tVar, genericArray['tVar']);
+    for(var i=0; i<genericArray['listTVar'].length; i++) {
+      checkSimple(genericObject.listTVar[i], genericArray['listTVar'][i]);
+    }
+  }
+}
+
+void checkSuperComplex(SuperComplex superComplexObject,
+                       dynamic superComplexArray) {
+  expect(superComplexObject, new isInstanceOf<SuperComplex>('SuperComplex'));
+  expect(superComplexObject.setSimpleVar,
+      new isInstanceOf<Set<Simple>>('Set<Simple>'));
+  for (var i=0; i<superComplexArray['setSimpleVar'].length; i++) {
+    var simpleVar = superComplexObject.setSimpleVar.elementAt(i);
+    checkSimple(simpleVar, superComplexArray['setSimpleVar'][i]);
+  }  
+  expect(superComplexObject.listIntVar,
+      new isInstanceOf<List<int>>('List<int>'));
+  expect(superComplexObject.listIntVar, superComplexArray['listIntVar']);
+  expect(superComplexObject.mapStringVar,
+      new isInstanceOf<Map<String, String>>('Map<String, String>'));
+  expect(superComplexObject.mapStringVar, superComplexArray['mapStringVar']);
+  expect(superComplexObject.mapIntVar,
+      new isInstanceOf<Map<int, String>>('Map<int, String>'));
+  expect(superComplexObject.mapIntVar, superComplexArray['mapIntVar']);
+  expect(superComplexObject.listStringVar,
+      new isInstanceOf<List<String>>('List<String>'));
+  expect(superComplexObject.listStringVar, superComplexArray['listStringVar']);
+  expect(superComplexObject.listSimpleVar,
+      new isInstanceOf<List<Simple>>('List<Simple>'));
+  for (var i=0; i<superComplexArray['listSimpleVar'].length; i++) {
+    var simpleVar = superComplexObject.listSimpleVar[i];
+    checkSimple(simpleVar, superComplexArray['listSimpleVar'][i]);
+  }  
+  expect(superComplexObject.mapComplexVar,
+      new isInstanceOf<Map<String, Complex>>('Map<String, Complex>'));
+  superComplexArray['mapComplexVar'].forEach((key, complexVar) {
+    checkComplex(superComplexObject.mapComplexVar[key], complexVar);
+  });  
 }

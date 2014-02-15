@@ -30,5 +30,11 @@ dynamic _handleSimpleType(Type rootType, dynamic data) {
   }
 
   if (rootType == List && data is List) return data;
-  if (rootType == Map && data is Map) return data;
+  if (rootType == Map) {
+    if (data is Map) return data;
+    if (data is List) return data.asMap();
+  }
+  if (rootType == Set && data is List) return new Set.from(data);
+  
+  throw rootType.toString() + ' is not that simple.';
 }

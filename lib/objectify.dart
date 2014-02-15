@@ -32,12 +32,20 @@ dynamic objectify(Type rootType, dynamic data, {bool debug: false}) {
   if (data == null) {
     return null;
   }
-
+  if (rootType == dynamic || rootType == null || rootType == Object) {
+    return data;
+  }  
   if (rootType == String || rootType == num || rootType == int
       || rootType == double || rootType == bool || rootType == List
-      || rootType == Map) {
+      || rootType == Map || rootType == Set) {
     return _handleSimpleType(rootType, data);
-  } else {
-    return _handleComplexType(rootType, data);
   }
+  return _handleComplexType(rootType, data);
+}
+
+bool isSubclassOf(Type type, Type superType) {
+  var classMirror = reflectClass(type);
+  var instanceMirror = classMirror.newInstance('', []);
+  var typeInstance = instanceMirror.reflectee;
+  return (type is superType);
 }
