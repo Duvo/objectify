@@ -63,7 +63,7 @@ class SuperComplex {
   Map<int, String> mapIntVar;
   List<String> listStringVar;
   List<Simple> listSimpleVar;
-  Map<String, Complex> mapComplexVar;  
+  Map<String, Complex> mapComplexVar;
 }
 
 var superComplex1 = {'setSimpleVar': [simple1, simple2],
@@ -72,94 +72,140 @@ var superComplex1 = {'setSimpleVar': [simple1, simple2],
                      'mapIntVar': {1: 'one', 2: 'two', 3: 'three'},
                      'listStringVar': ['foo', 'bar', 'foobar'],
                      'listSimpleVar': [simple1, simple2],
-                     'listComplexVar': {'num1': complex1, 'num2': complex2}};
+                     'mapComplexVar': {'num1': complex1, 'num2': complex2}};
 
-const TEST_SIMPLE = false;
+const TEST_TOOL = true;
+const TEST_SIMPLE = true;
 const TEST_COMPLEX = true;
 
 main() {
-  group('Tools', () {
-    test('isSubclassOf', () {
-      expect(isSubclassOf(List, List), isTrue, reason: 'List - List');
-      var temp = new List<String>();
-      expect(isSubclassOf(temp.runtimeType, List), isTrue, reason: 'List<String> - List');
-      temp = 15;
-      expect(isSubclassOf(temp.runtimeType, num), isTrue, reason: 'int - num');
-      expect(isSubclassOf(List, List), isTrue, reason: 'List - List');
-      expect(isSubclassOf(List, List), isTrue, reason: 'List - List');
+  if (TEST_TOOL) {
+    group('Tools', () {
+      test('hasSuperclass', () {
+        expect(hasSuperclass(List, List), isTrue, reason: 'List - List');
+        expect(hasSuperclass(int, num), isTrue, reason: 'int - num');
+        expect(hasSuperclass(num, int), isFalse, reason: 'num - int');
+        expect(hasSuperclass(Simple, String), isFalse, reason: 'Simple - String');
+      });
+      test('isSimpleType', () {
+        expect(isSimpleType(String), isTrue, reason: 'String');
+        expect(isSimpleType(num), isTrue, reason: 'num');
+        expect(isSimpleType(int), isTrue, reason: 'int');
+        expect(isSimpleType(double), isTrue, reason: 'double');
+        expect(isSimpleType(bool), isTrue, reason: 'bool');
+        expect(isSimpleType(List), isFalse, reason: 'List');
+        expect(isSimpleType(Map), isFalse, reason: 'Map');
+        expect(isSimpleType(Set), isFalse, reason: 'Set');
+        expect(isSimpleType(Complex), isFalse, reason: 'Complex');
+        expect(isSimpleType(Object), isFalse, reason: 'Complex');
+      });
+      test('isArrayType', () {
+        expect(isArrayType(bool), isFalse, reason: 'bool');
+        expect(isArrayType(List), isTrue, reason: 'List');
+        expect(isArrayType(Map), isTrue, reason: 'Map');
+        expect(isArrayType(Set), isTrue, reason: 'Set');
+        expect(isArrayType(Complex), isFalse, reason: 'Complex');
+        expect(isArrayType(Object), isFalse, reason: 'Complex');
+      });
+      test('isDynamicType', () {
+        expect(isDynamicType(bool), isFalse, reason: 'bool');
+        expect(isDynamicType(List), isFalse, reason: 'List');
+        expect(isDynamicType(Map), isFalse, reason: 'Map');
+        expect(isDynamicType(Set), isFalse, reason: 'Set');
+        expect(isDynamicType(Complex), isFalse, reason: 'Complex');
+        expect(isDynamicType(dynamic), isTrue, reason: 'Complex');
+        expect(isDynamicType(Object), isTrue, reason: 'Complex');
+        expect(isDynamicType(null), isTrue, reason: 'Complex');
+      });
     });
-  });
+  }
   
   if (TEST_SIMPLE) {
     group('Simples types', () {
-      test('num', () {
-        expect(objectify(num, 1), 1);
-        expect(objectify(num, 1.5), 1.5);
-        expect(objectify(num, '2'), 2);
-        expect(objectify(num, '2.5'), 2.5);
-
-        expect(objectify(int, 3), 3);
-        expect(objectify(int, '4'), 4);
-        expect(objectify(int, 5.1), 5);
-        expect(objectify(int, '6.1'), 6);
-        expect(objectify(int, 6.8), 7);
-        expect(objectify(int, '7.8'), 8);
-
-        expect(objectify(double, 8.5), 8.5);
-        expect(objectify(double, '9.5'), 9.5);
-        expect(objectify(double, 10), 10.0);
-        expect(objectify(double, '11'), 11.0);
-
+      var objectifyNum = new Objectify<num>();
+      var objectifyInt = new Objectify<int>();
+      var objectifyDouble = new Objectify<double>();
+      var objectifyString = new Objectify<String>();
+      var objectifyBool = new Objectify<bool>();
+      var objectifyList = new Objectify<List>();
+      var objectifyMap = new Objectify<Map>();
+      var objectifySet = new Objectify<Set>();
+      
+      test('num', () {        
+        expect(objectifyNum.convert(1), 1);
+        expect(objectifyNum.convert(1.5), 1.5);
+        expect(objectifyNum.convert('2'), 2);
+        expect(objectifyNum.convert('2.5'), 2.5);
+        
+        expect(objectifyInt.convert(3), 3);
+        expect(objectifyInt.convert('4'), 4);
+        expect(objectifyInt.convert(5.1), 5);
+        expect(objectifyInt.convert('6.1'), 6);
+        expect(objectifyInt.convert(6.8), 7);
+        expect(objectifyInt.convert('7.8'), 8);
+        
+        expect(objectifyDouble.convert(8.5), 8.5);
+        expect(objectifyDouble.convert('9.5'), 9.5);
+        expect(objectifyDouble.convert(10), 10.0);
+        expect(objectifyDouble.convert('11'), 11.0);
       });
-      test('String', () {
-        expect(objectify(String, 'foo').toString(), 'foo');
-        expect(objectify(String, 1).toString(), '1');
-        expect(objectify(String, true).toString(), 'true');
+      test('String', () {        
+        expect(objectifyString.convert('foo').toString(), 'foo');
+        expect(objectifyString.convert(1).toString(), '1');
+        expect(objectifyString.convert(true).toString(), 'true');
       });
-      test('bool', () {
-        expect(objectify(bool, true), isTrue);
-        expect(objectify(bool, false), isFalse);
-        expect(objectify(bool, 'true'), isTrue);
-        expect(objectify(bool, 'false'), isFalse);
-        expect(objectify(bool, 1), isTrue);
-        expect(objectify(bool, 0), isFalse);
+      test('bool', () {        
+        expect(objectifyBool.convert(true), isTrue);
+        expect(objectifyBool.convert(false), isFalse);
+        expect(objectifyBool.convert('true'), isTrue);
+        expect(objectifyBool.convert('false'), isFalse);
+        expect(objectifyBool.convert(1), isTrue);
+        expect(objectifyBool.convert(0), isFalse);
       });
       test('Null', () {
-        expect(objectify(String, null), isNull, reason: 'Null string');
-        expect(objectify(int, null), isNull, reason: 'Null int');
-        expect(objectify(double, null), isNull, reason: 'Null double');
-        expect(objectify(bool, null), isNull, reason: 'Null bool');
+        expect(objectifyString.convert(null), isNull, reason: 'Null string');
+        expect(objectifyInt.convert(null), isNull, reason: 'Null int');
+        expect(objectifyDouble.convert(null), isNull, reason: 'Null double');
+        expect(objectifyBool.convert(null), isNull, reason: 'Null bool');
       });
       test('List', () {
-        expect(objectify(List, [true, 1, 2.0, 'foo', null, [1, 2, 3], {'1':1}]),
+        expect(objectifyList.convert([true, 1, 2.0, 'foo', null, [1, 2, 3], {'1':1}]),
             [true, 1, 2.0, 'foo', null, [1, 2, 3], {'1':1}]);
       });
       test('Map', () {
-        expect(objectify(Map, {'foo': 'bar', 2: '2'}), {'foo': 'bar', 2: '2'});
-        expect(objectify(Map, ['foo', 'bar']), {0: 'foo', 1: 'bar'});
+        expect(objectifyMap.convert({'foo': 'bar', 2: '2'}), {'foo': 'bar', 2: '2'});
+        expect(objectifyMap.convert(['foo', 'bar']), {0: 'foo', 1: 'bar'});
       });
       test('Set', () {
-        expect(objectify(Set, ['foo', 'bar']), new Set.from(['foo', 'bar']));
+        expect(objectifySet.convert(['foo', 'bar']), new Set.from(['foo', 'bar']));
       });
     });
   }
 
   if (TEST_COMPLEX) {
     group('Complex types', () {
-      /*test('Simple', () {
-        Simple simple = objectify(Simple, simple1);        
+      var objectifySimple = new Objectify<Simple>();
+      var objectifyComplex = new Objectify<Complex>();
+      var objectifyGenericString = new Objectify<Generic<String>>();
+      var objectifyGenericSimple = new Objectify<Generic<Simple>>();
+      var objectifySuper = new Objectify<SuperComplex>();
+      
+      test('Simple', () {
+        Simple simple = objectifySimple.convert(simple1);        
         checkSimple(simple, simple1);
       });
       test('Complex', () {
-        Complex complex = objectify(Complex, complex1);        
+        Complex complex = objectifyComplex.convert(complex1);        
         checkComplex(complex, complex1);
-      });*/
+      });
       test('Generic', () {
-        Generic generic = objectify(Generic, generic1);
-        checkGeneric(generic, generic1);           
+        Generic gen1 = objectifyGenericString.convert(generic1);
+        checkGeneric(gen1, generic1);
+        Generic gen2 = objectifyGenericSimple.convert(generic2);
+        checkGeneric(gen2, generic2); 
       });
       test('Super complex', () {
-        SuperComplex superComplex = objectify(SuperComplex, superComplex1);        
+        SuperComplex superComplex = objectifySuper.convert(superComplex1);
         checkSuperComplex(superComplex, superComplex1);
       });
     });
@@ -200,15 +246,13 @@ void checkGeneric(Generic genericObject, dynamic genericArray) {
   }
 }
 
-void checkSuperComplex(SuperComplex superComplexObject,
-                       dynamic superComplexArray) {
+void checkSuperComplex(SuperComplex superComplexObject, dynamic superComplexArray) {
   expect(superComplexObject, new isInstanceOf<SuperComplex>('SuperComplex'));
-  expect(superComplexObject.setSimpleVar,
-      new isInstanceOf<Set<Simple>>('Set<Simple>'));
-  for (var i=0; i<superComplexArray['setSimpleVar'].length; i++) {
+  expect(superComplexObject.setSimpleVar.first, new isInstanceOf<Simple>('Simple'));
+  for (var i=0; i<superComplexArray['setSimpleVar'].length; i++) {    
     var simpleVar = superComplexObject.setSimpleVar.elementAt(i);
     checkSimple(simpleVar, superComplexArray['setSimpleVar'][i]);
-  }  
+  }
   expect(superComplexObject.listIntVar,
       new isInstanceOf<List<int>>('List<int>'));
   expect(superComplexObject.listIntVar, superComplexArray['listIntVar']);
